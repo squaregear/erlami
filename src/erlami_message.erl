@@ -244,7 +244,7 @@ add_returned_content(Message, Line) ->
 		notfound -> "";
 		{ok, Text} -> Text
 	end,
-	{"output", Existing++Line}.
+	{"output", Existing++"\r\n"++Line}.
 
 %% @doc Returns true if the given message is a response (i.e: it contains an
 %% attribute "response".
