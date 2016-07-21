@@ -241,10 +241,9 @@ unmarshall(Text) ->
 
 add_returned_content(Message, Line) ->
 	Existing = case erlami_message:get(Message, "output") of
-		notfound -> "";
-		{ok, Text} -> Text
-	end,
-	{"output", Existing++"\r\n"++Line}.
+		notfound -> {"output", Line}.
+		{ok, Text} -> {"output", Text++"\r\n"++Line}.
+	end.
 
 %% @doc Returns true if the given message is a response (i.e: it contains an
 %% attribute "response".
