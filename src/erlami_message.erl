@@ -242,7 +242,7 @@ unmarshall(Text) ->
 add_returned_content(Message, Line) ->
 	Existing = case erlami_message:get(Message, "output") of
 		notfound -> "";
-		Text -> Text
+		{ok, Text} -> Text
 	end,
 	{"output", Existing++Line}.
 
