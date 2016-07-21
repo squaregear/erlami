@@ -223,16 +223,28 @@ unmarshall(Text) ->
     lists:foldl(
         fun(Line, Acc) ->
             Pos = string:str(Line, ":"),
-            Key = string:to_lower(string:strip(
-                string:substr(Line, 1, Pos - 1),
-                both, 32
-            )),
-            Value = string:strip(string:substr(Line, Pos + 1), both, 32),
-            erlami_message:set(Acc, Key, Value)
+			{K, V} = case Pos of
+				0 -> add_returned_content(Acc, Line);
+				_ ->
+					Key = string:to_lower(string:strip(
+						string:substr(Line, 1, Pos - 1),
+						both, 32
+					)),
+					Value = string:strip(string:substr(Line, Pos + 1), both, 32),
+					{Key, Value}
+			end,
+            erlami_message:set(Acc, K, V)
         end,
         Message,
         Lines
     ).
+
+add_returned_content(message, line) ->
+	Existing = case erlami_message:get(message, "output") of
+		notfound -> "";
+		Text -> Text
+	end,
+	{"output", Existing++line}.
 
 %% @doc Returns true if the given message is a response (i.e: it contains an
 %% attribute "response".
