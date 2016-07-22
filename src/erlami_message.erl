@@ -218,20 +218,21 @@ explode_lines(Text) ->
 %% it to a message() so it is suitable to be operated on.
 -spec unmarshall(Text::string()) -> message().
 unmarshall(Text) ->
+	io:format(" - unmarshal Text=~p~n", [Text]),
     Lines = explode_lines(Text),
     Message = new_message(),
     lists:foldl(
         fun(Line, Acc) ->
-            Pos = string:str(Line, ":"),
-			{K, V} = case Pos of
+			io:format(" - unmarshall Line=~p~n", [Line]),
+			{K, V} = case string:str(Line, ":") of
 				0 -> add_returned_content(Acc, Line);
-				_ ->
+				Pos ->
 					Key = string:to_lower(string:strip(
 						string:substr(Line, 1, Pos - 1),
 						both, 32
 					)),
 					Value = string:strip(string:substr(Line, Pos + 1), both, 32),
-					{Key, Value}
+					look_for_users(Acc, Key, Value)
 			end,
             erlami_message:set(Acc, K, V)
         end,
@@ -244,6 +245,14 @@ add_returned_content(Message, Line) ->
 		notfound -> {"output", Line};
 		{ok, Text} -> {"output", Text++"\r\n"++Line}
 	end.
+
+look_for_users(Message, "user #", User) ->
+	case erlami_message:get(Message, "users") of
+		notfound -> {"users", [User]};
+		{ok, List} -> {"users", [User|List]}
+	end;
+look_for_users(_Message, Key, Value) ->
+	{Key, Value}.
 
 %% @doc Returns true if the given message is a response (i.e: it contains an
 %% attribute "response".
