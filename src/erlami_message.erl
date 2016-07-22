@@ -218,22 +218,20 @@ explode_lines(Text) ->
 %% it to a message() so it is suitable to be operated on.
 -spec unmarshall(Text::string()) -> message().
 unmarshall(Text) ->
-	io:format(" - unmarshal Text=~p~n", [Text]),
     Lines = explode_lines(Text),
     Message = new_message(),
     lists:foldl(
         fun(Line, Acc) ->
-			io:format(" - unmarshall Line=~p~n", [Line]),
-			{K, V} = case string:str(Line, ":") of
-				0 -> add_returned_content(Acc, Line);
-				Pos ->
-					Key = string:to_lower(string:strip(
-						string:substr(Line, 1, Pos - 1),
-						both, 32
-					)),
-					Value = string:strip(string:substr(Line, Pos + 1), both, 32),
-					look_for_users(Acc, Key, Value)
-			end,
+		{K, V} = case string:str(Line, ":") of
+			0 -> add_returned_content(Acc, Line);
+			Pos ->
+				Key = string:to_lower(string:strip(
+					string:substr(Line, 1, Pos - 1),
+					both, 32
+				)),
+				Value = string:strip(string:substr(Line, Pos + 1), both, 32),
+				look_for_users(Acc, Key, Value)
+		end,
             erlami_message:set(Acc, K, V)
         end,
         Message,
